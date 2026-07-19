@@ -5,8 +5,8 @@ import Login from '../pages/login'
 import { generateHmacToken } from '../src/utils/hmac'
 
 test('dev login stores user in localStorage', ()=>{
-  render(Login())
-  const btn = screen.getByText(/login/i)
+  render(<Login />)
+  const btn = screen.getByRole('button', { name: /login/i })
   fireEvent.click(btn)
   const user = JSON.parse(localStorage.getItem('loki_user'))
   expect(user).toBeTruthy()
