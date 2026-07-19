@@ -16,3 +16,8 @@ Notes for Capacitor builds
 - Build the web assets with `npm run build` or `next build && next export` to generate a `out` folder matching `capacitor.config.json` `webDir`.
 - For CI native builds, you'll need to provide signing keys (Android keystore, Apple provisioning profiles) as secrets on the build server.
 
+Playwright E2E notes
+- CI now includes an `e2e` job which runs `npx playwright test`. It starts the built app on port 3000 and runs tests against `http://localhost:3000`.
+- Playwright requires browsers; CI installs them automatically using `npx playwright install --with-deps`.
+
+

@@ -8,6 +8,7 @@
     "start": "next start",
     "test": "jest --runInBand --detectOpenHandles",
     "build:sw": "node scripts/generate-sw.js"
+    ,"build:sw:workbox": "node scripts/generate-workbox-sw.js",
     ,"e2e": "playwright test"
   },
   "dependencies": {
