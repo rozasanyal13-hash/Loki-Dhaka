@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import QRCode from 'qrcode.react'
+import { useState, useEffect } from 'react'
+import QRCode from 'react-qr-code'
 import { generateHmacToken } from '../src/utils/hmac'
 
 export default function Home() {
@@ -8,11 +8,20 @@ export default function Home() {
   const [expiresAt, setExpiresAt] = useState(null)
 
   async function handleGenerate() {
-    const secret = process.env.NEXT_PUBLIC_LOKI_SECRET || ''
+    const secret = process.env.NEXT_PUBLIC_LOKI_SECRET || process.env.REACT_APP_LOKI_SECRET || ''
     const { token: t, expiresAt: e } = await generateHmacToken(secret, payload)
     setToken(t)
     setExpiresAt(e)
+    // persist visit
+    const visits = JSON.parse(localStorage.getItem('loki_visits') || '[]')
+    visits.unshift({ payload, token: t, ts: Date.now() })
+    localStorage.setItem('loki_visits', JSON.stringify(visits.slice(0,50)))
   }
+
+  const [visits, setVisits] = useState([])
+  useEffect(()=>{
+    setVisits(JSON.parse(localStorage.getItem('loki_visits') || '[]'))
+  },[])
 
   return (
     <main style={{padding:20}}>
@@ -28,6 +37,13 @@ export default function Home() {
           <QRCode value={JSON.stringify({payload, token, expiresAt})} size={256} />
         </div>
       )}
+
+      <section style={{marginTop:20}}>
+        <h2>Recent mock visits</h2>
+        <ul>
+          {visits.map((v,i)=> <li key={i}>{v.payload} — {new Date(v.ts).toLocaleString()}</li>)}
+        </ul>
+      </section>
     </main>
   )
 }
