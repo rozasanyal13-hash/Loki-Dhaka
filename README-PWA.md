@@ -10,3 +10,9 @@ PWA and Capacitor notes
   npx cap add android
   npx cap add ios
   ```
+
+Notes for Capacitor builds
+- After running `npx cap add android` or `ios`, open the native project in Android Studio / Xcode to complete signing and configuration.
+- Build the web assets with `npm run build` or `next build && next export` to generate a `out` folder matching `capacitor.config.json` `webDir`.
+- For CI native builds, you'll need to provide signing keys (Android keystore, Apple provisioning profiles) as secrets on the build server.
+

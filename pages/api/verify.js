@@ -1,11 +1,39 @@
 // Server-side token verification API
-// Simple in-memory rate limiter (per IP) and timing-safe verification
-const rateMap = new Map()
+// Simple rate limiter: uses Redis when REDIS_URL is set, otherwise in-memory
 const RATE_LIMIT_WINDOW = 60_000 // 1 minute
 const RATE_LIMIT_MAX = 60 // max requests per window per IP
+let redisClient = null
+let RedisReady = false
+try {
+  if (process.env.REDIS_URL) {
+    // lazy-load ioredis if available
+    // eslint-disable-next-line global-require
+    const IORedis = require('ioredis')
+    redisClient = new IORedis(process.env.REDIS_URL)
+    redisClient.on('ready', ()=>{ RedisReady = true })
+    redisClient.on('error', ()=>{ RedisReady = false })
+  }
+} catch (e) {
+  // ioredis not installed or failed — we'll continue with in-memory limiter
+  redisClient = null
+  RedisReady = false
+}
 
-function isRateLimited(ip) {
+const rateMap = new Map()
+
+async function isRateLimited(ip) {
   const now = Date.now()
+  if (redisClient && RedisReady) {
+    try {
+      const key = `rate:${ip}`
+      const val = await redisClient.incr(key)
+      if (val === 1) await redisClient.pexpire(key, RATE_LIMIT_WINDOW)
+      return val > RATE_LIMIT_MAX
+    } catch (e) {
+      // fall back to memory
+    }
+  }
+
   const entry = rateMap.get(ip) || { count: 0, start: now }
   if (now - entry.start > RATE_LIMIT_WINDOW) {
     rateMap.set(ip, { count: 1, start: now })
