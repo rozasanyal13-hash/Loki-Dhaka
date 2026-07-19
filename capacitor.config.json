@@ -1,0 +1,6 @@
+{
+  "appId": "com.example.loki",
+  "appName": "LokiSecureQR",
+  "webDir": "out",
+  "bundledWebRuntime": false
+}
